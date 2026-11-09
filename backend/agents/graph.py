@@ -68,31 +68,29 @@ def run_trading_cycle(ticker: str, db: Session, force_action: str = None) -> Age
     proposal = final_state.get("strategist_proposal")
     risk = final_state.get("risk_decision")
 
-    # Execute trade via Mock Exchange (or Alpaca if configured)
+    # Execute trade via Alpaca Live Paper API (if configured) or Mock Exchange
     alpaca = AlpacaPaperClient()
     execution_result = None
 
     if risk and proposal:
         if alpaca.is_configured and risk.approved and proposal.action in ("BUY", "SELL"):
-            # Attempt live Alpaca paper order
-            import asyncio
             try:
                 side = "buy" if proposal.action == "BUY" else "sell"
-                alpaca_resp = asyncio.run(
-                    alpaca.submit_order(
-                        ticker=ticker,
-                        qty=risk.approved_shares,
-                        side=side,
-                        stop_loss=risk.stop_loss,
-                        take_profit=risk.take_profit
-                    )
+                alpaca_resp = alpaca.submit_order_sync(
+                    ticker=ticker,
+                    qty=risk.approved_shares,
+                    side=side,
+                    stop_loss=risk.stop_loss,
+                    take_profit=risk.take_profit
                 )
                 if alpaca_resp:
+                    alpaca_order_id = str(alpaca_resp.get("id", "paper-order"))
                     execution_result = mock_exchange.execute_order(run_id, proposal, risk)
+                    execution_result.order_id = f"alpaca-{alpaca_order_id[:8]}"
                     execution_result.execution_type = "ALPACA_PAPER"
-                    execution_result.message = f"Executed on Alpaca Paper: Order ID {alpaca_resp.get('id')}"
+                    execution_result.message = f"Live Order Dispatched to Alpaca Paper: Order #{alpaca_order_id[:8]} ({alpaca_resp.get('status', 'accepted')})"
             except Exception as e:
-                print(f"[run_trading_cycle] Alpaca submission fallback: {e}")
+                print(f"[run_trading_cycle] Alpaca live submission notice: {e}")
 
         if not execution_result:
             execution_result = mock_exchange.execute_order(run_id, proposal, risk)

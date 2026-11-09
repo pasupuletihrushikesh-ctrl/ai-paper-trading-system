@@ -7,7 +7,7 @@ def technical_analyst_node(state: AgentState) -> Dict[str, Any]:
     ticker = state.get("ticker", "NVDA")
     
     # 1. Fetch OHLCV and compute indicators
-    df = MarketDataService.fetch_ohlcv(ticker, period="60d", interval="1d")
+    df = MarketDataService.fetch_ohlcv(ticker, timeframe="1M")
     indicators_dict = MarketDataService.calculate_technical_indicators(df)
     
     current_price = indicators_dict["current_price"]

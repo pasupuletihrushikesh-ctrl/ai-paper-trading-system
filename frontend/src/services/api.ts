@@ -1,5 +1,12 @@
 import axios from 'axios';
-import { PortfolioStatus, AgentExecutionTrace, TradeLog } from '../types/trading';
+import { 
+  PortfolioStatus, 
+  AgentExecutionTrace, 
+  TradeLog, 
+  MarketDataResponse, 
+  LiveQuote,
+  CredentialsStatus
+} from '../types/trading';
 
 const API_BASE = '/api';
 
@@ -32,8 +39,42 @@ export const apiClient = {
     return res.data;
   },
 
-  async getMarketData(ticker: string): Promise<any> {
-    const res = await axios.get(`${API_BASE}/market/${ticker.toUpperCase()}`);
+  async getMarketData(ticker: string, timeframe: string = '1M'): Promise<MarketDataResponse> {
+    const res = await axios.get<MarketDataResponse>(`${API_BASE}/market/${ticker.toUpperCase()}`, {
+      params: { timeframe }
+    });
+    return res.data;
+  },
+
+  async getLiveQuote(ticker: string): Promise<LiveQuote> {
+    const res = await axios.get<LiveQuote>(`${API_BASE}/market/quote/${ticker.toUpperCase()}`);
+    return res.data;
+  },
+
+  async getWatchlist(): Promise<LiveQuote[]> {
+    const res = await axios.get<LiveQuote[]>(`${API_BASE}/market/watchlist`);
+    return res.data;
+  },
+
+  async getCredentialsStatus(): Promise<CredentialsStatus> {
+    const res = await axios.get<CredentialsStatus>(`${API_BASE}/settings/credentials`);
+    return res.data;
+  },
+
+  async updateCredentials(payload: {
+    alpaca_api_key?: string;
+    alpaca_secret_key?: string;
+    gemini_api_key?: string;
+  }): Promise<{ status: string; message: string; alpaca_connection: any }> {
+    const res = await axios.post(`${API_BASE}/settings/credentials`, payload);
+    return res.data;
+  },
+
+  async testAlpacaConnection(apiKey?: string, secretKey?: string): Promise<any> {
+    const res = await axios.post(`${API_BASE}/settings/test-alpaca`, {
+      api_key: apiKey || null,
+      secret_key: secretKey || null
+    });
     return res.data;
   }
 };

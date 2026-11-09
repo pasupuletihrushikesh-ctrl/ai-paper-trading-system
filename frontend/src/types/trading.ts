@@ -24,6 +24,7 @@ export interface SentimentItem {
   publisher?: string;
   published_at?: string;
   sentiment_score: number;
+  link?: string;
 }
 
 export interface SentimentSignal {
@@ -135,4 +136,69 @@ export interface PortfolioStatus {
   positions_count: number;
   positions: Position[];
   recent_trades: TradeLog[];
+}
+
+export interface LiveQuote {
+  ticker: string;
+  current_price: number;
+  previous_close: number;
+  change: number;
+  change_percent: number;
+  day_high: number;
+  day_low: number;
+  year_high?: number;
+  year_low?: number;
+  volume: number;
+  market_status: string;
+  timestamp: string;
+}
+
+export interface MarketDataResponse {
+  ticker: string;
+  timeframe: string;
+  quote: LiveQuote;
+  indicators: {
+    current_price: number;
+    rsi_14: number;
+    macd_line: number;
+    macd_signal: number;
+    macd_hist: number;
+    bb_upper: number;
+    bb_middle: number;
+    bb_lower: number;
+    ema_50: number;
+    ema_200: number;
+    raw_history: Array<{
+      timestamp: string;
+      close: number;
+      open: number;
+      high: number;
+      low: number;
+      volume: number;
+    }>;
+  };
+  news: SentimentItem[];
+}
+
+export interface AlpacaConnectionInfo {
+  connected: boolean;
+  status?: string;
+  account_number?: string;
+  currency?: string;
+  cash?: number;
+  portfolio_value?: number;
+  buying_power?: number;
+  multiplier?: string;
+  message: string;
+}
+
+export interface CredentialsStatus {
+  env_path: string;
+  alpaca_configured: boolean;
+  alpaca_key_masked: string;
+  alpaca_secret_set: boolean;
+  alpaca_base_url: string;
+  gemini_configured: boolean;
+  gemini_key_masked: string;
+  alpaca_connection: AlpacaConnectionInfo;
 }

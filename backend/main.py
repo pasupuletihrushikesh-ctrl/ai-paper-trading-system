@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import init_db
-from backend.routers import portfolio, trading, market
+from backend.routers import portfolio, trading, market, settings as settings_router
 from backend.config import settings
 
 app = FastAPI(
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(portfolio.router)
 app.include_router(trading.router)
 app.include_router(market.router)
+app.include_router(settings_router.router)
 
 @app.on_event("startup")
 def on_startup():
